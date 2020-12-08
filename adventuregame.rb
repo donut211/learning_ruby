@@ -31,7 +31,9 @@ class Player
   end
 end
 
-class Item
+#class Inventory
+
+class Item #potions that increase chance to hit or AP
   TYPES = [:potion, :sword]
 
   attr_accessor :type
@@ -56,14 +58,31 @@ class Item
   end
 end
 
+require_relative 'Adventure_game/Combat'
 class Monster
+  include Combat
+  
   attr_accessor :hit_points, :attack_power
+  MONSTER_TYPES = ["rat", "goblin", "troll"]
 
-  MAX_HIT_POINTS = 10
 
-  def initialize
-    @hit_points   = MAX_HIT_POINTS
-    @attack_power = 1
+  def initialize 
+    @monster = MONSTER_TYPES.sample
+    
+    case @monster
+    when "rat"
+      @hit_points   = 8
+      @attack_power = 1
+      #chance to hit
+    when "goblin"
+      @hit_points   = 12
+      @attack_power = 3
+      #chance to hit
+    when "troll"
+      @hit_points   = 16
+      @attack_power = 5
+      #chance to hit
+    end
   end
 
   def alive?
@@ -71,22 +90,21 @@ class Monster
   end
 
   def hurt(amount)
-    @hit_points -= amount
+    @hit_points = @hit_points.-(amount)
   end
 
   def to_s
-    "a horrible monster! garurururu"
+    "a horrible #{@monster} appears! 'garurururu!'"
   end
 
   def interact(player)
-    while player.alive?
-      puts "You hit the monster for #{player.attack_power} points."
-      hurt(player.attack_power)
-      break unless alive?
-      player.hurt(@attack_power)
-      puts "The monster hits you for #{@attack_power} points."
-    end
+    start_a_fight(player)
   end
+  
+  def print_status
+    puts "Monster is at #{hit_points} hit points"
+  end
+  
 end
 
 class World
@@ -118,7 +136,7 @@ class World
   end
 end
 
-class Room
+class Room #Add player interactions with items in the room. Get forked up!!
   attr_accessor :size, :content
 
   def initialize
@@ -127,13 +145,14 @@ class Room
     @adjective = get_adjective
   end
 
-  def interact(player)
+  def interact(player) #This code is confusing to me, please inquire
     if @content
       @content.interact(player)
-      @content = nil
+      @content = nil unless (@content.is_a?(Monster) && @content.alive?)
     end
   end
-
+  
+  
   def to_s
     "You are in a #{@size} room. It is #{@adjective}."
   end
@@ -154,8 +173,8 @@ end
 
 class Game
   ACTIONS = [
-    :north, :east, :south, :west, :look, :fight, :take, :status
-  ]
+    :north, :east, :south, :west, :look, :fight, :take, :status, :monster
+  ] 
 
   def initialize
     @world = World.new

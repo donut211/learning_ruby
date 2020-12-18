@@ -2,7 +2,7 @@ class Song
   attr_accessor :lyrics, :title
   def initialize(lyrics, title)
     @lyrics = lyrics
-    @title = lyrics
+    @title = title
   end
 
   def sing_me_a_song()
